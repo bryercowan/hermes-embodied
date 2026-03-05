@@ -1,0 +1,15 @@
+{
+  "env": {
+    "type": "gym_manipulator",
+    "name": "gym_hil",
+    "task": "PandaPickCubeBase-v0",
+    "fps": 10
+  },
+  "dataset": {
+    "repo_id": "user/sim_panda_pick",
+    "num_episodes_to_record": 50,
+    "push_to_hub": false
+  },
+  "mode": "record",
+  "device": "cuda"
+}

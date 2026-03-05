@@ -1,0 +1,26 @@
+# Vast.ai instance configuration for VLA training
+#
+# Usage: Referenced by train_smolvla.py --mode=vastai
+
+# GPU selection
+gpu_type: A100_SXM4        # A100_SXM4, A6000, RTX_4090, H100_SXM5
+num_gpus: 1
+max_cost_per_hour: 2.0     # USD cap
+min_reliability: 0.95
+
+# Instance config
+disk_gb: 100
+docker_image: "pytorch/pytorch:2.1.0-cuda12.1-cudnn8-devel"
+
+# Auto-install on startup
+onstart: |
+  apt-get update && apt-get install -y git cmake build-essential
+  pip install wandb accelerate huggingface-hub paramiko
+  git clone https://github.com/huggingface/lerobot.git /workspace/lerobot
+  cd /workspace/lerobot && pip install -e ".[smolvla]"
+  touch /workspace/.setup_complete
+
+# Environment variables (set via env or .env file)
+# VAST_API_KEY: (required)
+# HF_TOKEN: (optional, for private datasets/models)
+# WANDB_API_KEY: (optional, for experiment tracking)

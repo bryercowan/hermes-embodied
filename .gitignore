@@ -1,0 +1,32 @@
+# Dependencies (users clone lerobot themselves)
+lerobot/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.eggs/
+*.egg-info/
+
+# Data & checkpoints (too large for git)
+data/
+checkpoints/
+outputs/
+*.pt
+*.bin
+*.safetensors
+
+# Environment
+.env
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Conda
+*.conda
+
+# Loop state (local per-user)
+loop_state.json
+hermes-embodied/

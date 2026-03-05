@@ -1,0 +1,23 @@
+{
+  "episodes_per_cycle": 20,
+  "max_steps_per_episode": 300,
+  "task_description": "Pick up the cube",
+
+  "reward_threshold": 0.5,
+  "require_success": false,
+
+  "retrain_threshold": 50,
+  "training_steps": 5000,
+  "batch_size": 64,
+  "learning_rate": 1e-5,
+  "base_model": "lerobot/smolvla_base",
+
+  "eval_episodes": 50,
+  "improvement_threshold": 0.05,
+
+  "train_mode": "local",
+  "gpu_type": "A100_SXM4",
+  "max_gpu_cost": 2.0,
+
+  "workspace": "~/hermes-embodied"
+}
