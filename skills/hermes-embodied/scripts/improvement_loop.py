@@ -23,6 +23,10 @@ from pathlib import Path
 
 import numpy as np
 
+# Import training monitor for logging & reporting
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from training_monitor import log_event, format_cycle_report, format_training_complete_report
+
 # Headless rendering
 if sys.platform == "linux":
     os.environ.setdefault("MUJOCO_GL", "egl")
@@ -390,16 +394,16 @@ def run_cycle(config):
     # Save state
     save_state(state, workspace)
     
-    # Summary
-    print(f"\n{'='*60}")
-    print(f"CYCLE #{state['cycle_count']} COMPLETE")
-    print(f"{'='*60}")
-    print(f"Episodes collected this cycle: {len(episodes)}")
-    print(f"Good episodes kept: {len(good_episodes)}")
-    print(f"Current success rate: {current_success_rate*100:.1f}%")
-    print(f"Generation: {state['generation']}")
-    print(f"Best success rate: {state['best_success_rate']*100:.1f}%")
-    print(f"Total episodes ever: {state['total_episodes_collected']}")
+    # Log the cycle
+    log_event("cycle_complete", 
+              f"Cycle #{state['cycle_count']}: {len(episodes)} episodes, "
+              f"{current_success_rate*100:.1f}% success, gen {state['generation']}",
+              {"success_rate": current_success_rate, "episodes": len(episodes),
+               "good_episodes": len(good_episodes), "generation": state["generation"]})
+    
+    # Generate Telegram-friendly report (this goes to stdout → Hermes cron → Telegram)
+    report = format_cycle_report(state, len(episodes), current_success_rate, len(good_episodes))
+    print(f"\n{report}")
     
     return state
 
