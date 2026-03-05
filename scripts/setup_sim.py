@@ -164,15 +164,23 @@ def step_4_vastai():
     """Install Vast.ai SDK for cloud GPU provisioning."""
     print("\n[4/6] Checking Vast.ai SDK...")
 
-    result = conda_cmd("python -c 'from vastai import VastAI; print(\"ok\")' 2>/dev/null || echo 'missing'")
-    if "missing" in result.stdout:
-        print("  Installing vastai-sdk + paramiko...")
-        # IMPORTANT: --no-deps on vastai-sdk to avoid downgrading transformers
+    # Install both CLI (for Hermes terminal use) and SDK (for Python scripts)
+    result = conda_cmd("which vastai 2>/dev/null && echo 'cli_ok' || echo 'cli_missing'")
+    if "cli_missing" in result.stdout:
+        print("  Installing Vast.ai CLI + SDK + paramiko...")
+        conda_cmd("pip install vastai paramiko")
+        # Also install SDK with --no-deps to avoid downgrading transformers
         # vastai-sdk pins transformers<4.53 but SmolVLA needs >=5.0
-        # The SDK works fine with transformers 5.x despite the pin
-        conda_cmd("pip install --no-deps vastai-sdk && pip install paramiko")
+        conda_cmd("pip install --no-deps vastai-sdk")
     else:
-        print("  Vast.ai SDK already installed")
+        print("  Vast.ai CLI already installed")
+
+    # Verify CLI works
+    result = conda_cmd("vastai --version 2>/dev/null || echo 'cli_broken'")
+    if "cli_broken" not in result.stdout:
+        print(f"  CLI version: {result.stdout.strip().split(chr(10))[-1]}")
+    else:
+        print("  WARNING: CLI installed but not responding")
 
 
 def step_5_headless():

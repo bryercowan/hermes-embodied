@@ -103,15 +103,36 @@ for step in range(200):
 ```
 
 ### Phase 3: Provision GPU on Vast.ai
-```python
-from vastai import VastAI
-sdk = VastAI(api_key=os.environ["VAST_API_KEY"])
-# Search: sdk.search_offers(query="gpu_name=A100_SXM4 num_gpus=1 rentable=True dph_total<2.0")
-# Launch: sdk.launch_instance(num_gpus="1", gpu_name="A100_SXM4", image="pytorch/pytorch:2.1.0-cuda12.1-cudnn8-devel", disk="100", ssh=True)
-# Status: sdk.show_instances()  → ssh_host, ssh_port
-# SSH: paramiko for real commands (sdk.execute only does ls/rm/du)
-# Destroy: sdk.destroy_instance(ID=instance_id)
+
+Use the CLI (preferred — works directly from terminal):
+```bash
+# Set API key (one-time)
+vastai set api-key $VAST_API_KEY
+
+# Search for cheapest A100
+vastai search offers 'gpu_name=A100_SXM4 num_gpus=1 reliability>0.95 dph<2.0' -o 'dph'
+
+# Create instance (use ID from search results)
+vastai create instance <OFFER_ID> \
+  --image pytorch/pytorch:2.1.0-cuda12.1-cudnn8-devel \
+  --disk 100 --ssh --direct \
+  --onstart-cmd "apt-get update && apt-get install -y git && pip install wandb"
+
+# Check status
+vastai show instances --raw
+
+# Get SSH connection info
+vastai ssh-url <INSTANCE_ID>
+
+# View logs
+vastai logs <INSTANCE_ID> --tail 50
+
+# ALWAYS destroy when done (stops billing)
+vastai destroy instance <INSTANCE_ID>
 ```
+
+Use --raw flag for JSON output that's easy to parse programmatically.
+The --explain flag shows the underlying API call for debugging.
 
 ### Phase 4: Train SmolVLA
 On GPU instance via SSH:
@@ -184,6 +205,7 @@ prompt: "Run ~/projects/hermes-embodied/scripts/training_monitor.py and report t
 4. Stats normalization: MUST use YOUR dataset's stats.json for inference, not pretrained
 5. Mac: Use conda not uv, set image_obs=True, render_mode="rgb_array"
 6. Headless Linux: MUJOCO_GL=egl, PYOPENGL_PLATFORM=egl
-7. Vast.ai: pip package is `vastai-sdk`, import is `from vastai import VastAI`
-8. Vast.ai execute() only does ls/rm/du — use paramiko SSH for real commands
+7. Vast.ai CLI: `pip install vastai` (CLI) vs `pip install vastai-sdk` (Python SDK) — both installed
+8. Vast.ai CLI: use `vastai` commands from terminal (preferred). Use `--raw` for JSON output.
+9. Vast.ai SDK pins transformers<4.53 — installed with --no-deps to avoid breaking SmolVLA
 9. LIBERO needs Linux GPU (robosuite + EGL) — use gym_hil on Mac
