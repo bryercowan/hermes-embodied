@@ -21,6 +21,25 @@ metadata:
 
 One skill. Say "train my robot" and Hermes handles everything: GPU provisioning, data collection, VLA fine-tuning, evaluation, and autonomous improvement.
 
+## FIRST RUN — Setup Gate
+
+Before doing ANYTHING with this skill, check if the setup marker exists:
+```bash
+test -f ~/projects/hermes-embodied/.setup_complete && echo "ready" || echo "needs setup"
+```
+
+If it says "needs setup", run the setup script FIRST:
+```bash
+python ~/projects/hermes-embodied/scripts/setup_sim.py
+```
+
+This creates the conda env, installs all dependencies, and verifies everything works.
+It only needs to run once — subsequent calls detect the marker and skip.
+After setup, ALWAYS activate the env before running any other script:
+```bash
+eval "$(/opt/homebrew/bin/conda shell.bash hook)" && conda activate lerobot
+```
+
 ## When To Use
 
 - User mentions robots, arms, manipulation, VLA, SmolVLA, GR00T, LeRobot
@@ -128,6 +147,35 @@ Schedule via Hermes cron: `every 6h`
 - `evaluate.py` — A/B test checkpoints
 - `improvement_loop.py` — Full autonomous cycle
 - `demo.py` — Interactive walkthrough
+
+## Telegram Reporting
+
+All training events output structured reports to stdout. When run via Hermes cron
+with `deliver: "telegram"`, these reports drop right into the user's chat.
+
+### Set up monitoring cron:
+```
+schedule: "every 2h"
+deliver: "telegram"
+prompt: "Run ~/projects/hermes-embodied/scripts/training_monitor.py and report the status.
+         Read ~/hermes-embodied/loop_state.json and ~/hermes-embodied/training_log.jsonl.
+         Format a concise status update with: current generation, success rate, episodes
+         buffered, and whether training is due. If a Vast.ai instance is running, include
+         GPU utilization and cost so far."
+```
+
+### Training events logged to ~/hermes-embodied/training_log.jsonl:
+- cycle_complete: episodes collected, success rate, episodes buffered
+- training_started: GPU type, cost/hr, dataset
+- training_complete: steps, final loss, duration, total cost
+- model_promoted: new generation, success rate delta
+- model_rejected: reason
+
+### Report functions in scripts/training_monitor.py:
+- `format_status_report()` — full status overview
+- `format_cycle_report()` — single cycle summary  
+- `format_training_complete_report()` — training results with A/B test
+- `log_event(event, details, metrics)` — append to training log
 
 ## Pitfalls
 1. SmolVLA import: `lerobot.policies.smolvla` (NOT `lerobot.common.policies`)

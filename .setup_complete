@@ -1,0 +1,32 @@
+{
+  "status": "complete",
+  "timestamp": "2026-03-05T16:25:13.251654",
+  "platform": "Darwin",
+  "arch": "arm64",
+  "config": {
+    "sim": "OK",
+    "obs_pixels_front": [
+      128,
+      128,
+      3
+    ],
+    "obs_pixels_wrist": [
+      128,
+      128,
+      3
+    ],
+    "obs_agent_pos": [
+      18
+    ],
+    "action_space": [
+      7
+    ],
+    "smolvla": "OK",
+    "dataset": "OK",
+    "torch": "2.10.0",
+    "device": "mps (Apple Silicon)",
+    "vastai": "OK",
+    "errors": [],
+    "all_passed": true
+  }
+}
