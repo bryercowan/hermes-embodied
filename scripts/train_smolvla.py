@@ -201,8 +201,13 @@ echo "Setup complete at $(date)"
     
     if exit_code != 0:
         print(f"ERROR: Training failed with exit code {exit_code}")
-        # Don't destroy yet — let user inspect
         print(f"Instance still running for debugging: ssh -p {ssh_port} root@{ssh_host}")
+        print(f"WARNING: Instance will keep billing until destroyed!")
+        print(f"Run: vastai destroy instance {instance_id}")
+        # Still destroy after giving the user the info — don't leave orphaned instances
+        print(f"\nAuto-destroying instance to prevent billing leak...")
+        sdk.destroy_instance(ID=instance_id)
+        print("Instance destroyed.")
         sys.exit(1)
     
     print(f"\n6. Downloading checkpoint...")
